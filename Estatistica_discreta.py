@@ -44,11 +44,11 @@ LS = round((LI + amplitude_classe), 2)
 PM = round((LI + LS) / 2, 2)
 
 lista2 = []
-contador = 1
-while contador < arredondamento_numero_classes + 1:
+contador = 0
+while contador < arredondamento_numero_classes:
 
     lista1 = []
-    lista1.extend([contador, LI, LS, PM])
+    lista1.extend([LI, LS, PM])
     lista2.append(lista1)
 
     LI += amplitude_classe
@@ -59,8 +59,18 @@ while contador < arredondamento_numero_classes + 1:
     contador += 1
 
 print('========Distribuição de Frequência por Classes==========')
-colunas = ['Classe', 'LI', 'LS', 'PM']
-df = pd.DataFrame(lista2, columns=colunas)
+
+dados_formatados = [
+    {
+        'Classe': i + 1,
+        'LI': valores[0],
+        'LS': valores[1],
+        'PM': valores[2]
+    }
+    for i, valores in enumerate(lista2)
+]
+
+df = pd.DataFrame(dados_formatados)
 print(df)
 
 
@@ -102,33 +112,59 @@ print(df)
 
 #=============Frequência dos dados==========
 
-fi = 0 #Frequência Absoluta
-lista_frequencia_absoluta = [] # Iniciando a lista onde vai ficar os valores da Frequência Absoluta.
-fr = 0 #Frequência Relativa
-lista_frequencia_relativa = [] #Iniciando a lista onde vai ficar os valores da Frequência Relativa
+class FrequenciaInvalidaError(Exception):
+    pass
 
-#Frequência Absoluta
-for sublista in lista_classe:
-    fi = len(sublista)
-    lista_frequencia_absoluta.append(fi)
+try:
+    fi = 0 #Frequência Absoluta
+    lista_frequencia_absoluta = [] # Iniciando a lista onde vai ficar os valores da Frequência Absoluta.
+    fr = 0 #Frequência Relativa
+    lista_frequencia_relativa = [] #Iniciando a lista onde vai ficar os valores da Frequência Relativa
+    lista_frequencia_relativa_por_cento = []
 
-#Frequência Relativa
-for numero in lista_frequencia_absoluta:
-    fr = numero/quantidade_elementos
-    lista_frequencia_relativa.append(fr)
+    #Frequência Absoluta
+    for sublista in lista_classe:
+        fi = len(sublista)
+        lista_frequencia_absoluta.append(fi)
 
-#Tabela da LI e LS
-print('')
-print('============Tabela da Frequência============')
-dados_formatados = {
-     'Classe': lista_ordinal_classe,
-     'FI': lista_frequencia_absoluta,
-     'FS': lista_frequencia_relativa,
-}
+    #Frequência Relativa
+    for numero in lista_frequencia_absoluta:
+        fr = numero/quantidade_elementos
+        lista_frequencia_relativa.append(fr)
 
-df = pd.DataFrame(dados_formatados)
-print(df)
+    #Frequência Porcentual. 
+    for numero in lista_frequencia_relativa:
+        fr_porcento = numero*100
+        lista_frequencia_relativa_por_cento.append(fr_porcento)
 
-# Verificação
-PFS = df["FS"].sum() # Prova real da Frequência relativa
-print(f'Se a soma de todos os valores de FS (Frequẽncia Relativa) for menor que 1, algo deu errado: Resultado da soma: {PFS}')
+    #Tabela da LI e LS
+    print('')
+    print('============Tabela da Frequência============')
+    dados_formatados = {
+        'Classe': lista_ordinal_classe,
+        'FI': lista_frequencia_absoluta,
+        'FR': lista_frequencia_relativa,
+        'FR%': lista_frequencia_relativa_por_cento, 
+    }
+
+    df = pd.DataFrame(dados_formatados)
+    print(df)
+
+    # Verificação
+    PRfr = df["FR"].sum() # Prova real da Frequência relativa
+    print(f'Prava real da Frequência Relativa: {PRfr}')
+
+    PRFR_porcento = df["FR%"].sum() #Prova real da porcentagem da Frequência relativa
+    print(f'Prova real da porcentagem da Frequêcnia relativa: {PRFR_porcento}')
+
+    if abs(PRfr - 1) > 0.0001:
+        raise FrequenciaInvalidaError(f'Erro na FR: soma = {PRfr}')
+
+    if abs(PRFR_porcento - 100) > 0.01:
+        raise FrequenciaInvalidaError(f'Erro na FR%: soma = {PRFR_porcento}')
+    
+except FrequenciaInvalidaError as e:
+    print(f'Erro de frequência: {e}')
+
+except Exception as e:
+    print(f'Outro erro: {e}')
