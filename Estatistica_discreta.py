@@ -132,10 +132,26 @@ try:
         fr = numero/quantidade_elementos
         lista_frequencia_relativa.append(fr)
 
-    #Frequência Porcentual. 
+    #Frequência Percentual. 
     for numero in lista_frequencia_relativa:
         fr_porcento = numero*100
         lista_frequencia_relativa_por_cento.append(fr_porcento)
+    
+    #Frequência Acumulada da FI
+    lista_fia = [] #Lista da Frequência absoluta acumulada
+    acumulador = 0
+
+    for fi in lista_frequencia_absoluta:
+        acumulador += fi
+        lista_fia.append(acumulador)
+
+    #Frequẽncia Acumulada da FR
+    lista_fra = [] #Frequência Relativa Acumulada
+    acumulador = 0
+
+    for fr in lista_frequencia_relativa:
+        acumulador += fr
+        lista_fra.append(acumulador)
 
     #Tabela da LI e LS
     print('')
@@ -144,19 +160,23 @@ try:
         'Classe': lista_ordinal_classe,
         'FI': lista_frequencia_absoluta,
         'FR': lista_frequencia_relativa,
-        'FR%': lista_frequencia_relativa_por_cento, 
+        'FR%': lista_frequencia_relativa_por_cento,
+        'FIA': lista_fia, 
+        'FRA': lista_fra,
     }
 
     df = pd.DataFrame(dados_formatados)
     print(df)
 
-    # Verificação
+    print('')#Espaço no terminal
+
     PRfr = df["FR"].sum() # Prova real da Frequência relativa
     print(f'Prava real da Frequência Relativa: {PRfr}')
 
     PRFR_porcento = df["FR%"].sum() #Prova real da porcentagem da Frequência relativa
     print(f'Prova real da porcentagem da Frequêcnia relativa: {PRFR_porcento}')
 
+    #Verificação de erro:
     if abs(PRfr - 1) > 0.0001:
         raise FrequenciaInvalidaError(f'Erro na FR: soma = {PRfr}')
 
@@ -168,3 +188,4 @@ except FrequenciaInvalidaError as e:
 
 except Exception as e:
     print(f'Outro erro: {e}')
+
